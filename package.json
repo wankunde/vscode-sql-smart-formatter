@@ -1,0 +1,42 @@
+{
+  "name": "vscode-sql-smart-formatter",
+  "displayName": "SQL Smart Formatter",
+  "description": "Format SQL files using editor indentation settings with a lightweight, dependency-free formatter.",
+  "version": "0.0.1",
+  "publisher": "your-publisher-id",
+  "engines": {
+    "vscode": "^1.84.0"
+  },
+  "license": "MIT",
+  "categories": [
+    "Formatters"
+  ],
+  "activationEvents": [
+    "onLanguage:sql",
+    "onLanguage:mysql",
+    "onLanguage:postgres"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sqlSmartFormatter.formatDocument",
+        "title": "SQL: Format Document"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "lint": "echo 'No linter configured'"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.84.0",
+    "typescript": "^5.4.0",
+    "vsce": "^2.15.0"
+  }
+}
+
