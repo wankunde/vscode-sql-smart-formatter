@@ -3,7 +3,11 @@
   "displayName": "SQL Smart Formatter",
   "description": "Format SQL files using editor indentation settings with a lightweight, dependency-free formatter.",
   "version": "0.0.1",
-  "publisher": "your-publisher-id",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wankunde/vscode-sql-smart-formatter.git"
+  },
+  "publisher": "wankunde",
   "engines": {
     "vscode": "^1.84.0"
   },
