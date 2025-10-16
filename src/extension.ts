@@ -119,6 +119,8 @@ function simpleSqlFormat(sql: string, indentUnit: string): string {
       .replace(singleKwRegex, (m: string) => m.toUpperCase());
     // Enforce newlines before selected clauses
     t = t.replace(clauseRegex, '\n$1');
+    // Ensure SELECT after an opening parenthesis starts on a new line, e.g. AS (SELECT ...)
+    t = t.replace(/\(\s*SELECT\b/gi, '(\nSELECT');
     // WITH CTE list formatting: put first CTE on a new line and each subsequent CTE on its own line
     t = t
       .replace(/\bWITH\s+/gi, 'WITH\n')
