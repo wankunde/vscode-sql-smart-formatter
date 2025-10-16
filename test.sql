@@ -9,7 +9,7 @@ with ord_all as (
         order_amount,
         if_item_new,
         if_mid_new
-    FROM bili_bi.dws_sqzz_item_mid_date_ifnew_a_d
+    FROM xx.dws_sqzz_item_mid_date_ifnew_a_d
     where log_date = '20251014'
 ),
 date_all as (
