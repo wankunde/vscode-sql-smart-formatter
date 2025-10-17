@@ -1,0 +1,59 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compile TypeScript",
+            "type": "shell",
+            "command": "npm",
+            "args": ["run", "compile"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": ["$tsc"]
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "npm",
+            "args": ["test"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOn": "Compile TypeScript"
+        },
+        {
+            "label": "Run Development Test",
+            "type": "shell",
+            "command": "./dev_test.sh",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Package Extension",
+            "type": "shell",
+            "command": "npm",
+            "args": ["run", "package"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOn": "Run Tests"
+        }
+    ]
+}

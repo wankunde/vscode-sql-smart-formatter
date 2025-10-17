@@ -1,0 +1,82 @@
+{
+  "testCases": [
+    {
+      "name": "function_spacing_basic",
+      "description": "Remove space between function name and opening parenthesis",
+      "input": "SELECT max (value) FROM table",
+      "expected": "SELECT max(value)\nFROM table"
+    },
+    {
+      "name": "function_spacing_custom_udf",
+      "description": "Remove space for custom UDF functions",
+      "input": "SELECT my_function (param) WHERE condition",
+      "expected": "SELECT my_function(param)\nWHERE condition"
+    },
+    {
+      "name": "function_spacing_schema_prefix",
+      "description": "Remove space for schema-prefixed functions",
+      "input": "SELECT schema.udf_name (arg1, arg2)",
+      "expected": "SELECT schema.udf_name(arg1, arg2)"
+    },
+    {
+      "name": "function_spacing_multiple_functions",
+      "description": "Handle multiple functions in one query",
+      "input": "SELECT max (col1), min (col2), sum (col3) FROM table",
+      "expected": "SELECT max(col1), min(col2), sum(col3)\nFROM table"
+    },
+    {
+      "name": "as_keyword_same_line",
+      "description": "Keep AS keyword and alias on same line",
+      "input": "SELECT col1 AS\n    alias_name FROM table",
+      "expected": "SELECT col1 AS alias_name\nFROM table"
+    },
+    {
+      "name": "from_indentation_subquery",
+      "description": "Maintain proper FROM indentation in subqueries",
+      "input": "SELECT * FROM (SELECT col FROM table) t",
+      "expected": "SELECT *\nFROM (\n    SELECT col\n    FROM table\n) t"
+    },
+    {
+      "name": "complex_query_with_functions",
+      "description": "Complex query with multiple formatting requirements",
+      "input": "WITH ord_all AS (SELECT biz, max (if_item_new) AS if_new FROM table WHERE log_date = '20251014') SELECT t1.biz, max (t1.if_item_new) AS if_item_weekly_new FROM ord_all t1",
+      "expected": "WITH\nord_all AS (\n    SELECT biz, max(if_item_new) AS if_new\n    FROM table\n    WHERE log_date = '20251014'\n)\nSELECT t1.biz, max(t1.if_item_new) AS if_item_weekly_new\nFROM ord_all t1"
+    },
+    {
+      "name": "sql_keywords_with_parentheses",
+      "description": "Ensure SQL keywords like AND, OR still have proper spacing",
+      "input": "SELECT * FROM table WHERE (condition1) AND (condition2)",
+      "expected": "SELECT *\nFROM table\nWHERE (condition1) AND (condition2)"
+    },
+    {
+      "name": "mixed_functions_and_keywords",
+      "description": "Mix of functions and SQL keywords with parentheses",
+      "input": "SELECT max (value) AND (condition) OR my_func (param)",
+      "expected": "SELECT max(value) AND (condition) OR my_func(param)"
+    },
+    {
+      "name": "case_statement_formatting",
+      "description": "CASE statement formatting with functions",
+      "input": "SELECT CASE WHEN max (col) > 0 THEN 'positive' ELSE 'negative' END AS result",
+      "expected": "SELECT CASE\n    WHEN max(col) > 0 THEN 'positive'\n    ELSE 'negative'\nEND AS result"
+    },
+    {
+      "name": "parenthesis_comma_spacing",
+      "description": "Remove extra space between closing parenthesis and comma",
+      "input": "WITH ord_all AS (SELECT biz FROM table) , date_all AS (SELECT date FROM table)",
+      "expected": "WITH\nord_all AS (\n    SELECT biz\n    FROM table\n), date_all AS (\n    SELECT date\n    FROM table\n)"
+    },
+    {
+      "name": "parenthesis_comma_spacing_multiple",
+      "description": "Handle multiple parenthesis-comma combinations",
+      "input": "SELECT (col1) , (col2) , (col3) FROM table",
+      "expected": "SELECT (col1), (col2), (col3)\nFROM table"
+    },
+    {
+      "name": "parenthesis_comma_spacing_with_functions",
+      "description": "Parenthesis-comma spacing with function calls",
+      "input": "SELECT max (col1) , min (col2) , (col3) FROM table",
+      "expected": "SELECT max(col1), min(col2), (col3)\nFROM table"
+    }
+  ]
+}

@@ -1,6 +1,10 @@
-import * as vscode from 'vscode';
+#!/usr/bin/env node
 
-function getIndentation(editorOptions: vscode.TextEditorOptions): string {
+const fs = require('fs');
+const path = require('path');
+
+// 导入格式化函数
+function getIndentation(editorOptions) {
   const insertSpaces = editorOptions.insertSpaces !== false;
   if (insertSpaces) {
     const size = typeof editorOptions.tabSize === 'number' ? editorOptions.tabSize : 2;
@@ -9,7 +13,7 @@ function getIndentation(editorOptions: vscode.TextEditorOptions): string {
   return '\t';
 }
 
-function simpleSqlFormat(sql: string, indentUnit: string): string {
+function simpleSqlFormat(sql, indentUnit) {
   // Enhanced formatter per requirements:
   // - Uppercase keywords broadly (WITH, AND, etc.)
   // - Preserve comments (line -- and block /* */), do not wrap or reflow comments
@@ -18,11 +22,10 @@ function simpleSqlFormat(sql: string, indentUnit: string): string {
   // - Wrap non-comment lines at 100 bytes
 
   // Tokenize while preserving quotes and comments
-  type Segment = { text: string; kind: 'text' | 'sq' | 'dq' | 'bq' | 'lineComment' | 'blockComment' };
-  const segments: Segment[] = [];
+  const segments = [];
   const len = sql.length;
   let i = 0;
-  function pushText(start: number, end: number) {
+  function pushText(start, end) {
     if (end > start) segments.push({ text: sql.slice(start, end), kind: 'text' });
   }
   while (i < len) {
@@ -113,7 +116,7 @@ function simpleSqlFormat(sql: string, indentUnit: string): string {
     // Normalize spaces lightly and uppercase single-word keywords
     let t = seg.text
       .replace(/\s+/g, ' ')
-      .replace(singleKwRegex, (m: string) => m.toUpperCase());
+      .replace(singleKwRegex, (m) => m.toUpperCase());
     
     // Handle comma spacing - add space after comma but not before, except after closing parenthesis
     t = t.replace(/\s*,\s*/g, (match, offset, string) => {
@@ -172,13 +175,13 @@ function simpleSqlFormat(sql: string, indentUnit: string): string {
 
   // Now build lines with indentation by parenthesis depth and wrapping at 100 bytes for non-comment lines
   const rawLines = transformed.split(/\n/);
-  const resultLines: string[] = [];
+  const resultLines = [];
   let depth = 0;
   let insideBlockComment = false;
 
   const wrapLimitBytes = 100;
-  const wrapLine = (line: string, baseIndent: string): string[] => {
-    const lines: string[] = [];
+  const wrapLine = (line, baseIndent) => {
+    const lines = [];
     let current = '';
     const words = line.split(/\s+/);
     for (let w of words) {
@@ -255,41 +258,83 @@ function simpleSqlFormat(sql: string, indentUnit: string): string {
   return resultLines.join('\n');
 }
 
-export function activate(context: vscode.ExtensionContext) {
-  const provider: vscode.DocumentFormattingEditProvider = {
-    provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.ProviderResult<vscode.TextEdit[]> {
-      const editor = vscode.window.activeTextEditor;
-      const indentUnit = editor ? getIndentation(editor.options) : '  ';
-      const fullRange = new vscode.Range(
-        document.positionAt(0),
-        document.positionAt(document.getText().length)
-      );
-      const original = document.getText();
-      const formatted = simpleSqlFormat(original, indentUnit);
-      if (formatted === original) {
-        return [];
+// 测试运行器
+class TestRunner {
+  constructor() {
+    this.testCases = [];
+    this.results = [];
+  }
+
+  loadTestCases() {
+    const testFile = path.join(__dirname, 'test_cases.json');
+    const testData = JSON.parse(fs.readFileSync(testFile, 'utf8'));
+    this.testCases = testData.testCases;
+  }
+
+  runTest(testCase) {
+    const actual = simpleSqlFormat(testCase.input, '  ');
+    const passed = actual.trim() === testCase.expected.trim();
+    
+    const result = {
+      name: testCase.name,
+      description: testCase.description,
+      input: testCase.input,
+      expected: testCase.expected,
+      actual: actual,
+      passed: passed
+    };
+
+    this.results.push(result);
+    return result;
+  }
+
+  runAllTests() {
+    console.log('🧪 Running SQL Formatter Tests...\n');
+    
+    this.loadTestCases();
+    
+    let passed = 0;
+    let failed = 0;
+
+    for (const testCase of this.testCases) {
+      const result = this.runTest(testCase);
+      
+      if (result.passed) {
+        console.log(`✅ ${result.name}: ${result.description}`);
+        passed++;
+      } else {
+        console.log(`❌ ${result.name}: ${result.description}`);
+        console.log(`   Input:    ${result.input}`);
+        console.log(`   Expected: ${result.expected}`);
+        console.log(`   Actual:   ${result.actual}`);
+        console.log('');
+        failed++;
       }
-      return [vscode.TextEdit.replace(fullRange, formatted)];
     }
-  };
 
-  const langSelectors: vscode.DocumentSelector = [
-    { language: 'sql', scheme: 'file' },
-    { language: 'sql', scheme: 'untitled' },
-    { language: 'mysql', scheme: 'file' },
-    { language: 'postgres', scheme: 'file' }
-  ];
+    console.log(`\n📊 Test Results: ${passed} passed, ${failed} failed`);
+    
+    if (failed > 0) {
+      console.log('\n💾 Saving failed test results to tests/failed_tests.json');
+      this.saveFailedTests();
+      process.exit(1);
+    } else {
+      console.log('\n🎉 All tests passed!');
+      process.exit(0);
+    }
+  }
 
-  context.subscriptions.push(
-    vscode.languages.registerDocumentFormattingEditProvider(langSelectors, provider),
-    vscode.commands.registerCommand('sqlSmartFormatter.formatDocument', async () => {
-      await vscode.commands.executeCommand('editor.action.formatDocument');
-    })
-  );
+  saveFailedTests() {
+    const failedTests = this.results.filter(r => !r.passed);
+    const outputFile = path.join(__dirname, 'failed_tests.json');
+    fs.writeFileSync(outputFile, JSON.stringify(failedTests, null, 2));
+  }
 }
 
-export function deactivate() {
-  // no-op
+// 运行测试
+if (require.main === module) {
+  const runner = new TestRunner();
+  runner.runAllTests();
 }
 
-
+module.exports = { TestRunner, simpleSqlFormat };

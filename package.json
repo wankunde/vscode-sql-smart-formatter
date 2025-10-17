@@ -34,7 +34,10 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package": "vsce package",
-    "lint": "echo 'No linter configured'"
+    "lint": "echo 'No linter configured'",
+    "test": "node tests/test_runner.js",
+    "test:watch": "npm run compile && npm test",
+    "test:ci": "npm run compile && npm test"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
